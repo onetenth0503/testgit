@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Capture Image</title>
+</head>
+<body>
+    <h1>Capture Image</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="snap">Snap Photo</button>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="image" id="image">
+        <button type="submit">Upload Image</button>
+    </form>
+    <h2>Photo Preview:</h2>
+    <img id="photoPreview" src="{% if image_data_url %}{{ image_data_url }}{% endif %}" alt="Photo Preview" style="width: 640px; height: 480px;">
+    
+    <!-- 新增情绪检测结果显示区域 -->
+    <h2>Emotion Detection Result:</h2>
+    <div id="emotionResult">
+        {% if result %}
+            <p>{{ result }}</p>
+        {% endif %}
+    </div>
+    
+    <!-- 新增生成的描述文本显示区域 -->
+    <h2>Generated Description:</h2>
+    <div id="generatedText">
+        {% if generated_text %}
+            <p>{{ generated_text }}</p>
+        {% endif %}
+    </div>
+        <!-- 新增生成的图像显示区域 -->
+        <h2>Generated Image:</h2>
+        <div id="generatedImage">
+            {% if generated_image_url %}
+                <img src="{{ generated_image_url }}" alt="Generated Image" style="width: 640px; height: 480px;">
+            {% endif %}
+        </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const snap = document.getElementById('snap');
+        const imageInput = document.getElementById('image');
+        const photoPreview = document.getElementById('photoPreview');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error accessing camera: " + err);
+            });
+
+        snap.addEventListener('click', () => {
+            context.drawImage(video, 0, 0, 640, 480);
+            const dataURL = canvas.toDataURL('image/png');
+            imageInput.value = dataURL;
+            photoPreview.src = dataURL;
+            photoPreview.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

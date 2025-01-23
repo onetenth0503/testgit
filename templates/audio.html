@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Audio</title>
+</head>
+<body>
+    <h1>Capture Audio</h1>
+    <button id="record">Record Audio</button>
+    <audio id="audio" controls></audio>
+    <script>
+        document.getElementById('record').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                const audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = document.getElementById('audio');
+                    audio.src = audioUrl;
+
+                    // 將音頻數據發送到後端
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob);
+
+                    fetch('/capture_audio/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                        } else {
+                            alert('Audio captured successfully');
+                        }
+                    });
+                };
+
+                mediaRecorder.start();
+
+                setTimeout(() => {
+                    mediaRecorder.stop();
+                }, 5000); // 錄製 5 秒
+            } catch (err) {
+                console.error('Error accessing microphone: ', err);
+            }
+        });
+    </script>
+</body>
+</html>
