@@ -115,5 +115,10 @@ def capture_audio(request):
 
 
 
-#測試
-#測試1
+
+
+
+
+
+#abc 測試1 測試
+
