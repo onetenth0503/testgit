@@ -112,3 +112,8 @@ def capture_audio(request):
         except Exception as e:
             return JsonResponse({'error': str(e)})
     return render(request, 'audio.html')
+
+
+
+#測試
+#測試1
